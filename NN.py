@@ -1,10 +1,12 @@
 import numpy as np
 from sklearn import datasets, linear_model
 import matplotlib.pyplot as plt
+from sklearn.neural_network import MLPClassifier
+from sklearn.metrics import accuracy_score
 
 # generate sample data
 np.random.seed(0)
-X, y = datasets.make_moons(400, noise=0.20)
+X, y = datasets.make_moons(200, noise=0.20)
 
 
 # generate nn output target
@@ -15,7 +17,9 @@ y_true[np.where(y==1), 1] = 1
 
 n, m = X.shape
 # plot data
+plt.figure('original')
 plt.scatter(X[:, 0], X[:, 1], c=y, cmap=plt.cm.Spectral)
+plt.title("original")
 # plt.show()
 # print(X, y)
 
@@ -28,7 +32,7 @@ def softmax(z):
 
 class NN_model:
 	learning_rate = 0.001
-	n_epoch = 2000
+	n_epoch = 1000
 
 nn = NN_model()
 
@@ -68,6 +72,7 @@ def back_propagation(nn, X, y_true):
 		L = 0.0
 		for i in range(n):
 			nn, y_pred = forward_caculate(nn, X[i], y_pred)
+			
 
 			for j in range(nn.output_dim):
 				nn.diff2[0][j] = nn.a2[0][j] - y_true[i][j]
@@ -85,18 +90,37 @@ def back_propagation(nn, X, y_true):
 	return nn
 
 	# print(nn.w1, nn.w2)
+
+def drawPicture_of_my_prediction(nn, X):
+	y_pred_label = []
+	y_pred = np.zeros((1, 2))
+	for i in range(n):
+		nn, y_pred = forward_caculate(nn, X[i], y_pred)
+		y_pred_label.append(int(y_pred.argmax(axis=1)))
+
+	plt.figure('my_prediction')
+	plt.scatter(X[:, 0], X[:, 1], c=y, cmap=plt.cm.Spectral)
+	plt.title("predicted of my_prog")
+
+	return y_pred_label
+
+
 back_propagation(nn, X, y_true)
+y_pred = np.zeros(y.shape)
+y_pred = drawPicture_of_my_prediction(nn, X)
 
 
-# a = [1, 1]
-# b = [1, 1]
-# if a == b:
-# 	print(1)
-# else:
-# 	print(2)
 
-# a = np.arange(9)
-# print(a, np.max(a))
-# # for i in arange(9):
-# a[np.where(a==3)] = 7387383783
-# print(a)
+##################   sklearn    ####################
+model = MLPClassifier().fit(X, y)
+y_pred_MLP = model.predict(X)
+
+print('accuracy of my_prog:', accuracy_score(y, y_pred))
+print('accuracy of sklearn:', accuracy_score(y, y_pred_MLP))
+
+# print(model.predict(X))
+plt.figure('predicted of sklearn')
+plt.scatter(X[:, 0], X[:, 1], c=y_pred_MLP, cmap=plt.cm.Spectral)
+plt.title("predicted of sklearn")
+
+plt.show()
